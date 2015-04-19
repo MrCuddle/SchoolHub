@@ -72,11 +72,11 @@ bool init()
     }
     else
     {
+        SDL_ShowCursor(SDL_DISABLE);
         //Use OpenGL 4.1 core
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
         //Create window
         gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
         if (gWindow == NULL)
@@ -281,7 +281,6 @@ bool initGL()
         1.0f, -1.0f, 1.0f
     };
 
-
     std::vector<GLfloat> uvBufferData
     {
         0.f, 0.f, 1.f,1.f, 0.f,1.0f,
@@ -381,7 +380,6 @@ void render()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
-    // Set our "myTextureSampler" sampler to user Texture Unit 0
     glUniform1i(textureID, 0);
 
     glUniform3f(dirLightColorLoc, dirLight.color.x, dirLight.color.y, dirLight.color.z);
