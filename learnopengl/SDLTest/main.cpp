@@ -7,7 +7,8 @@ and may not be redistributed without written permission.*/
 #include <SDL_opengl.h>
 #include <gl\glu.h>
 #include <iostream>
-#include "Shader.h"
+#include "ShaderProgram.h"
+#include <SOIL/SOIL.h>
 
 //Starts up SDL, creates window, and initializes OpenGL
 bool init();
@@ -106,160 +107,60 @@ bool init()
 
     return success;
 }
-
-void handleKeys(unsigned char key, int x, int y)
-{
-    //Toggle quad
-    if (key == 'q')
-    {
-        gRenderQuad = !gRenderQuad;
-    }
-}
-
 void update()
 {
     //No per frame update needed
 }
 
-void printProgramLog(GLuint program)
-{
-    //Make sure name is shader
-    if (glIsProgram(program))
-    {
-        //Program log length
-        int infoLogLength = 0;
-        int maxLength = infoLogLength;
-
-        //Get info string length
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-        //Allocate string
-        char* infoLog = new char[maxLength];
-
-        //Get info log
-        glGetProgramInfoLog(program, maxLength, &infoLogLength, infoLog);
-        if (infoLogLength > 0)
-        {
-            //Print Log
-            printf("%s\n", infoLog);
-        }
-
-        //Deallocate string
-        delete[] infoLog;
-    }
-    else
-    {
-        printf("Name %d is not a program\n", program);
-    }
-}
-
-void printShaderLog(GLuint shader)
-{
-    //Make sure name is shader
-    if (glIsShader(shader))
-    {
-        //Shader log length
-        int infoLogLength = 0;
-        int maxLength = infoLogLength;
-
-        //Get info string length
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
-
-        //Allocate string
-        char* infoLog = new char[maxLength];
-
-        //Get info log
-        glGetShaderInfoLog(shader, maxLength, &infoLogLength, infoLog);
-        if (infoLogLength > 0)
-        {
-            //Print Log
-            printf("%s\n", infoLog);
-        }
-
-        //Deallocate string
-        delete[] infoLog;
-    }
-    else
-    {
-        printf("Name %d is not a shader\n", shader);
-    }
-}
-
-GLuint VAO[2];
-GLuint shaderProgram1, shaderProgram2;
+GLuint VAO, textureID;
+ShaderProgram shaderProgram;
 bool initGL()
 {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     GLfloat vertices[] = {
-        -0.8f, -0.8f, 0.0f,
-        -0.3f, -0.8f, 0.0f,
-        -.55f, -0.3f, 0.0f,
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
     };
 
     GLuint indices[] = 
     { 
         0, 1, 2,
+        1,2,3
     };
     GLuint VBO, EBO;
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    glGenVertexArrays(2, VAO);
+    glGenVertexArrays(1, &VAO);
 
-    glBindVertexArray(VAO[0]);
+    glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
+    
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
-    GLfloat vertices2[] = {
-        -0.2f, -0.2f, 0.0f,
-        -0.0f, -0.5f, 0.0f,
-        -.345f, -0.6f, 0.0f,
-    };
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (GLvoid*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
-    GLuint indices2[] =
-    {
-        0, 1, 2,
-    };
-    GLuint VBO2, EBO2;
-    glGenBuffers(1, &VBO2);
-    glGenBuffers(1, &EBO2);
+    int texWidth, texHeight;
+    unsigned char* image = SOIL_load_image("container.jpg", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
+    
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-    glBindVertexArray(VAO[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-
-    Shader vertexShader, fragmentShader, fragmentShader2;
-
-    vertexShader.loadShader("vs.glsl", GL_VERTEX_SHADER);
-    fragmentShader.loadShader("fs.glsl", GL_FRAGMENT_SHADER);
-    fragmentShader2.loadShader("fs2.glsl", GL_FRAGMENT_SHADER);
-
-     shaderProgram1 = glCreateProgram();
-     glAttachShader(shaderProgram1, vertexShader.getID());
-     glAttachShader(shaderProgram1, fragmentShader.getID());
-
-     glLinkProgram(shaderProgram1);
-
-     shaderProgram2 = glCreateProgram();
-     glAttachShader(shaderProgram2, vertexShader.getID());
-     glAttachShader(shaderProgram2, fragmentShader2.getID());
-
-     glLinkProgram(shaderProgram2);
-
-    vertexShader.deleteShader();
-    fragmentShader.deleteShader();
-    fragmentShader2.deleteShader();
+    shaderProgram.loadShader("vs.glsl", "fs.glsl");
     return true;
 }
 
@@ -267,12 +168,10 @@ bool initGL()
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    glUseProgram(shaderProgram1);
-    glBindVertexArray(VAO[0]);
-    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-    glUseProgram(shaderProgram2);
-    glBindVertexArray(VAO[1]);
-    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+    shaderProgram.Use();
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -310,7 +209,6 @@ int main(int argc, char* args[])
                 {
                     int x = 0, y = 0;
                     SDL_GetMouseState(&x, &y);
-                    handleKeys(e.text.text[0], x, y);
                 }
             }
             //Update screen
