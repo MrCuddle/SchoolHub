@@ -25,6 +25,11 @@ public:
         glUseProgram(programID);
     }
 
+    GLuint getID()
+    {
+        return programID;
+    }
+
 private:
     GLuint programID;
 
