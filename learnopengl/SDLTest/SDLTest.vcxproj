@@ -80,7 +80,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fs.glsl" />
-    <None Include="fs2.glsl" />
+    <None Include="lightingFs.glsl" />
+    <None Include="plainFs.glsl" />
+    <None Include="plainVs.glsl" />
     <None Include="vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

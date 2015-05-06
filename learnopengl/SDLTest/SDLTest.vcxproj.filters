@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Basic">
+      <UniqueIdentifier>{223fb63e-db8e-4ae5-9900-09b677081718}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Lighting">
+      <UniqueIdentifier>{79fa32d2-e52b-4392-a971-d915357bcac5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -28,14 +34,20 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vs.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="fs.glsl">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Basic</Filter>
     </None>
-    <None Include="fs2.glsl">
-      <Filter>Source Files</Filter>
+    <None Include="vs.glsl">
+      <Filter>Source Files\Basic</Filter>
+    </None>
+    <None Include="lightingFs.glsl">
+      <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="plainVs.glsl">
+      <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="plainFs.glsl">
+      <Filter>Source Files\Lighting</Filter>
     </None>
   </ItemGroup>
 </Project>

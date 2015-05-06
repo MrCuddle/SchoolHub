@@ -12,6 +12,9 @@ and may not be redistributed without written permission.*/
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <type_traits>
+#include <cstring>
+#include <vector>
 
 //Starts up SDL, creates window, and initializes OpenGL
 bool init();
@@ -111,66 +114,65 @@ bool init()
     return success;
 }
 
-GLuint VAO, textureID;
-ShaderProgram shaderProgram;
-GLuint modelLoc, viewLoc, projectionLoc;
-glm::vec3 cubePositions[] = {
+GLuint VAO, textureID, lightVAO;
+ShaderProgram lightingShader, lampShader;
+std::vector<glm::vec3> cubePositions = {
     glm::vec3(0.0f, 0.0f, 0.0f),
-    glm::vec3(2.0f, 5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),
-    glm::vec3(2.4f, -0.4f, -3.5f),
-    glm::vec3(-1.7f, 3.0f, -7.5f),
-    glm::vec3(1.3f, -2.0f, -2.5f),
-    glm::vec3(1.5f, 2.0f, -2.5f),
-    glm::vec3(1.5f, 0.2f, -1.5f),
-    glm::vec3(-1.3f, 1.0f, -1.5f)
+    //glm::vec3(2.0f, 5.0f, -15.0f),
+    //glm::vec3(-1.5f, -2.2f, -2.5f),
+    //glm::vec3(-3.8f, -2.0f, -12.3f),
+    //glm::vec3(2.4f, -0.4f, -3.5f),
+    //glm::vec3(-1.7f, 3.0f, -7.5f),
+    //glm::vec3(1.3f, -2.0f, -2.5f),
+    //glm::vec3(1.5f, 2.0f, -2.5f),
+    //glm::vec3(1.5f, 0.2f, -1.5f),
+    //glm::vec3(-1.3f, 1.0f, -1.5f)
 };
 bool initGL()
 {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     GLfloat vertices[] = {
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
 
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
 
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
 
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
 
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
 
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f
     };
 
     GLuint indices[] = 
@@ -190,11 +192,11 @@ bool initGL()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
 
     int texWidth, texHeight;
     unsigned char* image = SOIL_load_image("container.jpg", &texWidth, &texHeight, 0, SOIL_LOAD_RGB);
@@ -205,12 +207,19 @@ bool initGL()
     glGenerateMipmap(GL_TEXTURE_2D);
     SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glBindVertexArray(0);
+    lightingShader.loadShader("plainVs.glsl", "lightingFs.glsl");
+    lampShader.loadShader("plainVs.glsl", "plainFs.glsl");
 
-    shaderProgram.loadShader("vs.glsl", "fs.glsl");
-    shaderProgram.Use();
-    modelLoc = glGetUniformLocation(shaderProgram.getID(), "model");
-    viewLoc = glGetUniformLocation(shaderProgram.getID(), "view");
-    projectionLoc = glGetUniformLocation(shaderProgram.getID(), "projection");
+
+
+
+    glGenVertexArrays(1, &lightVAO);
+    glBindVertexArray(lightVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
 
     glEnable(GL_DEPTH_TEST);
     return true;
@@ -221,34 +230,59 @@ vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);
 vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
 vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
 
+vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+GLuint lookAtPositionIndex = 0;
+
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    shaderProgram.Use();
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    lightingShader.Use();
+    GLuint modelLoc = glGetUniformLocation(lightingShader.getID(), "model");
+    GLuint viewLoc = glGetUniformLocation(lightingShader.getID(), "view");
+    GLuint projectionLoc = glGetUniformLocation(lightingShader.getID(), "projection");
+    GLuint objectColorLoc = glGetUniformLocation(lightingShader.getID(), "objectColor");
+    GLuint lightColorLoc = glGetUniformLocation(lightingShader.getID(), "lightColor");
+    GLuint lightPosLoc = glGetUniformLocation(lightingShader.getID(), "lightPos");
+    GLuint viewPosLoc = glGetUniformLocation(lightingShader.getID(), "viewPos");
+    glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
+    glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+    glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+    glUniform3f(viewPosLoc, cameraPos.x, cameraPos.y, cameraPos.z);
+    //glBindTexture(GL_TEXTURE_2D, textureID);
     glBindVertexArray(VAO);
-
-    GLfloat radius = 10.f;
-    GLfloat camX = sin((double)SDL_GetTicks()/1000) * radius;
-    GLfloat camZ = cos((double)SDL_GetTicks()/1000) * radius;
     glm::mat4 view;
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    view = glm::lookAt(cameraPos, cubePositions[lookAtPositionIndex], cameraUp);
 
 
     glm::mat4 projection;
     projection = glm::perspective(45.f, GLfloat(SCREEN_WIDTH / SCREEN_HEIGHT), 0.1f, 100.f);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-    for (GLuint i = 0; i < 10; i++)
+    glm::mat4 model;
+    for (GLuint i = 0; i < cubePositions.size(); i++)
     {
-        glm::mat4 model;
+        model = glm::mat4();
         model = glm::translate(model, cubePositions[i]);
         GLfloat angle = 20.f * i;
         model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
+
+    lampShader.Use();
+    modelLoc = glGetUniformLocation(lampShader.getID(), "model");
+    viewLoc = glGetUniformLocation(lampShader.getID(), "view");
+    projectionLoc = glGetUniformLocation(lampShader.getID(), "projection");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glBindVertexArray(lightVAO);
+    model = glm::mat4();
+    model = glm::translate(model, lightPos);
+    model = glm::scale(model, glm::vec3(0.2));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
     glBindVertexArray(0);
 }
 
@@ -304,12 +338,14 @@ int main(int argc, char* args[])
 }
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
-
+bool tabPressed = false;
 void update()
 {
     GLfloat currentFrame = SDL_GetTicks();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
+
+    cameraFront = normalize(cubePositions[lookAtPositionIndex] - cameraPos);
 
     GLfloat cameraSpeed = 0.009 * deltaTime;
     const Uint8* keyState = SDL_GetKeyboardState(NULL);
@@ -325,6 +361,33 @@ void update()
         cameraPos += cameraSpeed * cameraUp;
     if (keyState[SDL_SCANCODE_LCTRL])
         cameraPos -= cameraSpeed * cameraUp;
+
+
+    float lightSpeed = 0.02f;
+
+    if (keyState[SDL_SCANCODE_KP_8])
+        lightPos += vec3(0, 0, -lightSpeed);
+    if (keyState[SDL_SCANCODE_KP_5])
+        lightPos += vec3(0, 0, lightSpeed);
+    if (keyState[SDL_SCANCODE_KP_4])
+        lightPos += vec3(-lightSpeed, 0, 0);
+    if (keyState[SDL_SCANCODE_KP_6])
+        lightPos += vec3(lightSpeed, 0, 0);
+    if (keyState[SDL_SCANCODE_KP_1])
+        lightPos += vec3(0, -lightSpeed, 0);
+    if (keyState[SDL_SCANCODE_KP_7])
+        lightPos += vec3(0, lightSpeed, 0);
+
+    if (keyState[SDL_SCANCODE_TAB])
+    {
+        if (!tabPressed)
+        {
+            lookAtPositionIndex = (lookAtPositionIndex + 1) % cubePositions.size();
+            tabPressed = true;
+        }
+    }
+    else
+        tabPressed = false;
 }
 void close()
 {
