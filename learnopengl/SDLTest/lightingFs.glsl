@@ -1,5 +1,13 @@
 #version 330 core
-out vec4 color;
+out vec4 fragColor;
+
+struct DirLight 
+{
+	vec3 direction;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
 
 uniform vec3 objectColor;
 uniform vec3 lightColor;
@@ -7,11 +15,15 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform sampler2D texSampler;
 uniform sampler2D normalSampler;
+uniform sampler2D shadowSampler;
+uniform DirLight dirLight;
+uniform float shadowBias;
 
 in vec3 normalVs;
 in vec3 fragPos;
 in vec2 texCoordVs;
 in vec3 tangentVs;
+in vec4 fragPosLightSpaceVs;
 
 vec3 calcBumpedNormal()
 {
@@ -26,25 +38,36 @@ vec3 calcBumpedNormal()
 	newNormal = normalize(newNormal);
 	return newNormal; 
 }
+
+float shadowCalc(vec4 fragPosLightSpace, vec3 normal)
+{
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	float closestDepth = texture(shadowSampler, projCoords.xy).r;
+	float currentDepth = projCoords.z;
+	//float bias = max(0.05 * (1.0 - dot(normal, dirLight.direction)), shadowBias);
+	float bias = shadowBias;
+	float shadow = currentDepth -bias > closestDepth ? 1.0 : 0.0;
+	return shadow;
+}
+
 void main()
 {
-	float ambientStrength = 0.1f;
-	vec3 ambient = ambientStrength * lightColor;
-
-	vec3 norm = calcBumpedNormal();
+	vec3 color = texture(texSampler, texCoordVs).rgb;
+	vec3 normal = calcBumpedNormal();
+	vec3 lightColor = vec3(1.0);
+	vec3 ambient = 0.15 * color;
 	vec3 lightDir = normalize(lightPos - fragPos);
-
-	float diff = max(dot(norm, lightDir), 0.0);
+	float diff = max(dot(lightDir, normal),0.0);
 	vec3 diffuse = diff * lightColor;
-
-	float specularStrentgh = 0.5f;
 	vec3 viewDir = normalize(viewPos - fragPos);
-	vec3 reflectDir = reflect(-lightDir, norm);
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = 0.0;
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+	vec3 specular = spec * lightColor;
+	float shadow = shadowCalc(fragPosLightSpaceVs, normal);
+	vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;
 
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
-	vec3 specular = specularStrentgh * spec * lightColor;
-
-	vec3 result = (ambient + diffuse + specular) * objectColor;
-	//color = vec4(result, 1.0f);
-	color = texture(texSampler, texCoordVs) * vec4(result, 1.0f);
+	fragColor = vec4(lighting, 1.0); 
 }
