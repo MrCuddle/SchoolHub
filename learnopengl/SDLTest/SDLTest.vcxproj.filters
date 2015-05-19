@@ -49,5 +49,17 @@
     <None Include="plainFs.glsl">
       <Filter>Source Files\Lighting</Filter>
     </None>
+    <None Include="firstPassVs.glsl">
+      <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="firstPassFs.glsl">
+      <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="depthQuadFs.glsl">
+      <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="depthQuadVs.glsl">
+      <Filter>Source Files\Lighting</Filter>
+    </None>
   </ItemGroup>
 </Project>

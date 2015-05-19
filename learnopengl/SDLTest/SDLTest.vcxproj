@@ -79,6 +79,10 @@
     <ClInclude Include="ShaderProgram.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="depthQuadVs.glsl" />
+    <None Include="depthQuadFs.glsl" />
+    <None Include="firstPassFs.glsl" />
+    <None Include="firstPassVs.glsl" />
     <None Include="fs.glsl" />
     <None Include="lightingFs.glsl" />
     <None Include="plainFs.glsl" />
