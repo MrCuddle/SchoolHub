@@ -19,9 +19,15 @@
     <Filter Include="Source Files\Lighting">
       <UniqueIdentifier>{79fa32d2-e52b-4392-a971-d915357bcac5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\DebugShaders">
+      <UniqueIdentifier>{9bb1c7c3-ab82-43b1-98d8-89a62ba18a7f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugGeometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -33,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Lights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugGeometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -63,6 +72,12 @@
     </None>
     <None Include="depthQuadVs.glsl">
       <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="debugVs.glsl">
+      <Filter>Source Files\DebugShaders</Filter>
+    </None>
+    <None Include="debugFs.glsl">
+      <Filter>Source Files\DebugShaders</Filter>
     </None>
   </ItemGroup>
 </Project>
