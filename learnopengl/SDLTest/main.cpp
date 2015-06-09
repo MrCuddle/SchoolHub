@@ -1,7 +1,3 @@
-/*This source code copyrighted by Lazy Foo' Productions (2004-2015)
-and may not be redistributed without written permission.*/
-
-//Using SDL, SDL OpenGL, GLEW, standard IO, and strings
 #include <SDL.h>
 #include <gl\glew.h>
 #include <SDL_opengl.h>
@@ -18,32 +14,24 @@ and may not be redistributed without written permission.*/
 #include "Lights.h"
 #include "DebugGeometry.h"
 
-//Starts up SDL, creates window, and initializes OpenGL
 bool init();
 
-//Initializes rendering program and clear color
 bool initGL();
 
-//Input handler
 void handleKeys( unsigned char key, int x, int y );
 
-//Per frame update
 void update();
 
-//Renders quad to the screen
 void render();
 
-//Frees media and shuts down SDL
 void close();
 
-//Shader loading utility programs
 void printProgramLog( GLuint program );
+
 void printShaderLog( GLuint shader );
 
-//The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 
-//OpenGL context
 SDL_GLContext gContext;
 
 //Render flag
@@ -119,6 +107,8 @@ bool init()
 GLuint VAO, textureID, normalMapID, lightVAO, depthMapFBO, depthMap, floorVAO;
 const int SHADOW_WIDTH = SCREEN_WIDTH * 4, SHADOW_HEIGHT = SCREEN_HEIGHT * 4;
 ShaderProgram lightingShader, lampShader, firstPassShader, depthOnQuadShader, debugShader;
+DebugGeometry debugGeom;
+
 std::vector<glm::vec3> cubePositions = {
     glm::vec3( 0.0f, 0.0f, 0.0f ),
     glm::vec3( 2.0f, 5.0f, -15.0f ),
@@ -134,6 +124,7 @@ std::vector<glm::vec3> cubePositions = {
 
 void generateFloor()
 {
+    debugGeom.init();
     float lengthWidth = 5.0;
     std::vector<GLfloat> vertices =
     {
@@ -364,7 +355,7 @@ vec3 cameraPos = vec3( 0.0f, 0.0f, 3.0f );
 vec3 cameraFront = vec3( 0.0f, 0.0f, -1.0f );
 vec3 cameraUp = vec3( 0.0f, 1.0f, 0.0f );
 
-vec3 lightPos( 1.2f, 1.0f, 2.0f );
+vec3 lightPos( 1.2f, 15.0f, 2.0f );
 
 GLuint lookAtPositionIndex = 0;
 
@@ -452,12 +443,9 @@ void renderDepthMap()
     glBindVertexArray( 0 );
 }
 float shadowBias = 0.005;
-DebugGeometry dbLine, dbLine2, dbLine3, dbLine4, dbLine5, dbLine6;
-DebugGeometry debugGeom;
 float zVal = -1.0f;
 void renderSecondPass()
 {
-    debugGeom.init();
     glm::mat4 view;
     view = glm::lookAt( cameraPos, cubePositions[lookAtPositionIndex], cameraUp );
     glm::mat4 projection;
@@ -542,7 +530,7 @@ void renderSecondPass()
 
     glBindVertexArray( 0 );
 }
-
+bool quit = false;
 int main( int argc, char* args[] )
 {
     //Start up SDL and create window
@@ -552,9 +540,6 @@ int main( int argc, char* args[] )
     }
     else
     {
-        //Main loop flag
-        bool quit = false;
-
         //Event handler
         SDL_Event e;
 
@@ -635,6 +620,8 @@ void update()
         lightPos += vec3( 0, -lightSpeed, 0 );
     if( keyState[SDL_SCANCODE_KP_7] )
         lightPos += vec3( 0, lightSpeed, 0 );
+    if(keyState[SDL_SCANCODE_ESCAPE])
+        quit = true;
 
     if( keyState[SDL_SCANCODE_TAB] )
     {
@@ -648,13 +635,14 @@ void update()
         tabPressed = false;
 
     if( keyState[SDL_SCANCODE_KP_PLUS] )
-        shadowBias += 0.001;
+        shadowBias = max<float>(shadowBias + 0.0001, 0);
     if( keyState[SDL_SCANCODE_KP_MINUS] )
-        shadowBias -= 0.001;
+        shadowBias = max<float>(shadowBias - 0.0001, 0);
 
 }
 void close()
 {
+    SDL_GL_DeleteContext(gContext);
     SDL_DestroyWindow( gWindow );
     gWindow = NULL;
 
